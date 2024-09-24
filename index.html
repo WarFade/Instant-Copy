@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate or Copy Text</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #generateForm {
+            background-color: var(--form-background);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        label {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+            background-color: var(--input-background);
+            color: var(--input-color);
+        }
+
+        input[type="text"]:focus {
+            border-color: #3a86ff;
+            outline: none;
+        }
+
+        button {
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #2b6dd6;
+        }
+
+        #generatedLink {
+            margin-top: 20px;
+            font-size: 16px;
+            word-wrap: break-word;
+        }
+
+        a {
+            color: #3a86ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .link-box {
+            background-color: #dfffd9;
+            border: 1px solid #b2f0a1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 20px;
+            transition: opacity 0.3s ease;
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--modal-background);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-button {
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-button:hover {
+            background-color: #2b6dd6;
+        }
+
+        .timer {
+            color: red;
+            font-weight: bold;
+        }
+
+        .copyright {
+            color: grey;
+        }
+
+        :root {
+            --background: #f4f4f9;
+            --form-background: #ffffff;
+            --input-background: #ffffff;
+            --input-border: #ddd;
+            --input-color: #333;
+            --modal-background: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #121212;
+                --form-background: #1e1e1e;
+                --input-background: #333;
+                --input-border: #555;
+                --input-color: #fff;
+                --modal-background: #1e1e1e;
+            }
+
+            body {
+                background-color: var(--background);
+                color: #fff;
+            }
+
+            h2 {
+                color: #fff;
+            }
+
+            label {
+                color: #ccc;
+            }
+
+            .link-box {
+                background-color: #333;
+                border: 1px solid #666;
+                color: #fff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="generateForm" class="hidden">
+        <h2>Generate A Custom Copy Link</h2>
+        <form onsubmit="generateLink(event)">
+            <label for="textToCopy">Enter Text to Copy:</label>
+            <input type="text" id="textToCopy" name="textToCopy" placeholder="Type Your Text Here..." required>
+            <button type="submit">Generate Link</button>
+        </form>
+        <div id="generatedLink"></div>
+    </div>
+
+    <div id="customAlert" class="modal">
+        <div class="modal-content">
+            <p id="alertMessage"></p>
+            <button class="modal-button" onclick="closeAlert()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let alertTimeout;
+        let countdownTimer;
+
+        function copyTextFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const text = urlParams.get('text');
+            if (text) {
+                const decodedText = decodeURIComponent(text);
+                navigator.clipboard.writeText(decodedText).then(() => {
+                    showAlert(2);
+                }).catch(err => {
+                    console.error("Could Not Copy Text: ", err);
+                });
+            }
+        }
+
+        function generateLink(event) {
+            event.preventDefault();
+            const textToCopy = encodeURIComponent(document.getElementById('textToCopy').value);
+            const generatedUrl = `${window.location.origin}${window.location.pathname}?text=${textToCopy}`;
+            document.getElementById('generatedLink').innerHTML = `
+                <div class="link-box">Your Custom Link: <br>
+                <a href="${generatedUrl}" target="_blank">${generatedUrl}</a>
+                </div>`;
+        }
+
+        function showAlert(countdown) {
+            clearTimeout(alertTimeout);
+            clearInterval(countdownTimer);
+            let timer = countdown;
+
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.innerHTML = `Text Copied! Auto Closing In <span class="timer">${timer}</span> Seconds.<br><br><span class="copyright">&copy; 2024 WarFade. All Rights Reserved.</span>`;
+            document.getElementById('customAlert').style.display = 'flex';
+
+            countdownTimer = setInterval(() => {
+                timer--;
+                alertMessage.innerHTML = `Text Copied! Auto Closing In <span class="timer">${timer}</span> Seconds.<br><br><span class="copyright">&copy; 2024 WarFade. All Rights Reserved.</span>`;
+                if (timer <= 0) {
+                    clearInterval(countdownTimer);
+                    closeAlert();
+                }
+            }, 1000);
+        }
+
+        function closeAlert() {
+            clearTimeout(alertTimeout);
+            clearInterval(countdownTimer);
+            document.getElementById('customAlert').style.display = 'none';
+            window.close();
+        }
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('text')) {
+                copyTextFromUrl();
+            } else {
+                document.getElementById('generateForm').classList.remove('hidden');
+            }
+        };
+    </script>
+    <footer style="position: fixed; bottom: 0; width: 100%; text-align: center; padding: 10px 0; font-size: 14px; border-top: 1px solid #ddd;">
+    <p class="copyright">&copy; 2024 WarFade. All Rights Reserved.</p>
+</footer>
+</body>
+</html>
