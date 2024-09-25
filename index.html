@@ -203,7 +203,7 @@
         <h2>Generate A Custom Copy Link</h2>
         <form onsubmit="generateLink(event)">
             <label for="textToCopy">Enter Text to Copy:</label>
-            <input type="text" id="textToCopy" name="textToCopy" placeholder="Type Your Text Here..." required>
+            <input type="text" id="textToCopy" name="textToCopy" placeholder="Type Your Text Here..." required autocomplete="off">
             <button type="submit">Generate Link</button>
         </form>
         <div id="generatedLink"></div>
@@ -228,7 +228,15 @@
                 navigator.clipboard.writeText(decodedText).then(() => {
                     showAlert(2);
                 }).catch(err => {
-                    console.error("Could Not Copy Text: ", err);
+                	let errorMessage;
+                    if (err.name === 'NotAllowedError') {
+                    	errorMessage = "Clipboard Access Denied. Please Allow Clipboard Access From Site Settings.";
+                        window.close();
+                } else {
+                        errorMessage = "Could Not Copy Text: " + err.message;
+                }
+                alert(errorMessage);
+                console.error("Could Not Copy Text: ", err);
                 });
             }
         }
