@@ -167,6 +167,74 @@
             --modal-background: #ffffff;
         }
 
+        #notificationBar {
+            position: fixed;
+            top: 20px;
+            width: 90%;
+            max-width: 400px;
+            background-color: rgba(128, 128, 128, 0.2);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+            border-radius: 8px; 
+            overflow: hidden;
+        }
+        
+        #progressLine {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            height: 4px;
+            background-color: #f44336;
+            width: 100%;
+            transform: translateX(100%);
+            transition: transform 3s linear;
+        }
+        
+        #manualCopyContainer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        #manualCopyContainer p {
+            margin-bottom: 10px;
+        }
+
+        #manualCopyButton {
+            background-color: #3a86ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #manualCopyButton:hover {
+            background-color: #2b6dd6;
+        }
+        
+        @media (max-width: 600px) {
+            #manualCopyContainer p {
+                font-size: 14px;
+            }
+
+            #manualCopyButton {
+                width: 100%;
+            }
+        }
+
         @media (prefers-color-scheme: dark) {
             :root {
                 --background: #121212;
@@ -216,6 +284,17 @@
         </div>
     </div>
 
+    <div id="notificationBar">
+        <p>Automatic Copying Failed. Please Use The Copy Button.</p>
+        <div id="progressLine"></div>
+    </div>
+    
+
+    <div id="manualCopyContainer" class="hidden">
+        <p id="previewText"></p>
+        <button id="manualCopyButton" onclick="manualCopy()">Copy Text</button>
+    </div>
+
     <script>
         let alertTimeout;
         let countdownTimer;
@@ -228,15 +307,9 @@
                 navigator.clipboard.writeText(decodedText).then(() => {
                     showAlert(2);
                 }).catch(err => {
-                	let errorMessage;
-                    if (err.name === 'NotAllowedError') {
-                    	errorMessage = "Clipboard Access Denied. Please Allow Clipboard Access From Site Settings.";
-                        window.close();
-                } else {
-                        errorMessage = "Could Not Copy Text: " + err.message;
-                }
-                alert(errorMessage);
-                console.error("Could Not Copy Text: ", err);
+                    showNotificationBar();
+                    document.getElementById('previewText').innerText = decodedText;
+                    document.getElementById('manualCopyContainer').style.display = 'flex';
                 });
             }
         }
@@ -277,6 +350,38 @@
             window.close();
         }
 
+        function showNotificationBar() {
+            const notificationBar = document.getElementById('notificationBar');
+            notificationBar.style.display = 'block';
+
+            const progressLine = document.getElementById('progressLine');
+            progressLine.style.transform = 'translateX(0)';
+            setTimeout(() => {
+                progressLine.offsetHeight;
+                progressLine.style.transform = 'translateX(-100%)';
+            }, 0);
+
+            setTimeout(() => {
+                notificationBar.style.display = 'none';
+            }, 3000);
+        }
+
+        function manualCopy() {
+            const textToCopy = document.getElementById('previewText').innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showAlert(2);
+                closePageAfterCopy();
+            }).catch(err => {
+                alert("Could not copy text: " + err.message);
+            });
+        }
+
+        function closePageAfterCopy() {
+            setTimeout(() => {
+            window.close();
+                }, 2000);
+        }
+
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('text')) {
@@ -286,6 +391,7 @@
             }
         };
     </script>
+    
     <footer style="position: fixed; bottom: 0; width: 100%; text-align: center; padding: 10px 0; font-size: 14px; border-top: 1px solid #ddd;">
     <p class="copyright">&copy; 2024 WarFade. All Rights Reserved.</p>
 </footer>
