@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Generator</title>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+<body>
+    <div id="generateForm">
+        <h2>Link Generator</h2>
+        <form id="linkForm">
+            <label for="inputText">Enter Text:</label>
+            <input type="text" id="inputText" name="inputText" placeholder="Enter your text here" required>
+            <button type="submit">Generate Link</button>
+        </form>
+
+        <div id="generatedLink" class="hidden">
+            <p>Here is your generated link:</p>
+            <div class="link-box">
+                <a href="#" id="linkOutput"></a>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationBar">
+        <span id="notificationText"></span>
+        <div id="progressLine"></div>
+    </div>
+
+    <div id="manualCopyContainer">
+        <p>Manual copy mode is active. Please copy the link below:</p>
+        <button id="manualCopyButton">Copy Link</button>
+    </div>
+
+    <div class="modal" id="copyModal">
+        <div class="modal-content">
+            <p id="copyMessage">Link copied to clipboard!</p>
+            <button class="modal-button" id="closeModal">OK</button>
+        </div>
+    </div>
+
+    <footer class="copyright">
+        <p>&copy; 2024 Link Generator App</p>
+    </footer>
+
+    <script src="/public/script.js"></script>
+</body>
+</html>
