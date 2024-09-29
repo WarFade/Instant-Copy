@@ -1,0 +1,12 @@
+{
+  "name": "copy-text-app",
+  "version": "1.0.0",
+  "description": "Copy text app that can generate and copy text links.",
+  "main": "api/copyText.js",
+  "scripts": {
+    "start": "node api/copyText.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
