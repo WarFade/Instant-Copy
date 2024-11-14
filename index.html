@@ -106,6 +106,9 @@
             margin-top: 20px;
             transition: opacity 0.3s ease;
             color: #333;
+            word-break: break-all;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         .hidden {
@@ -274,6 +277,8 @@
         <form onsubmit="generateLink(event)">
             <label for="textToCopy">Enter Text to Copy:</label>
             <input type="text" id="textToCopy" name="textToCopy" placeholder="Type Your Text Here..." required autocomplete="off">
+            <label for="redirectUrl">Redirect URL:</label>
+            <input type="text" id="redirectUrl" name="redirectUrl" placeholder="(Optional)" autocomplete="off">
             <button type="submit">Generate Link</button>
         </form>
         <div id="generatedLink"></div>
@@ -319,7 +324,11 @@
         function generateLink(event) {
             event.preventDefault();
             const textToCopy = encodeURIComponent(document.getElementById('textToCopy').value);
-            const generatedUrl = `${window.location.origin}${window.location.pathname}?text=${textToCopy}`;
+            const redirectUrl = document.getElementById('redirectUrl').value ? encodeURIComponent(document.getElementById('redirectUrl').value) : null;
+            let generatedUrl = `${window.location.origin}${window.location.pathname}?text=${textToCopy}`;
+            if (redirectUrl) {
+                generatedUrl += `&url=${redirectUrl}`;
+            }
             document.getElementById('generatedLink').innerHTML = `
                 <div class="link-box">Your Custom Link: <br>
                 <a href="${generatedUrl}" target="_blank">${generatedUrl}</a>
@@ -349,7 +358,13 @@
             clearTimeout(alertTimeout);
             clearInterval(countdownTimer);
             document.getElementById('customAlert').style.display = 'none';
-            window.close();
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('url');
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                window.close();
+            }
         }
 
         function showNotificationBar() {
@@ -372,16 +387,9 @@
             const textToCopy = document.getElementById('previewText').innerText;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showAlert(2);
-                closePageAfterCopy();
             }).catch(err => {
-                alert("Could not copy text: " + err.message);
+                alert("Could Not Copy Text: " + err.message);
             });
-        }
-
-        function closePageAfterCopy() {
-            setTimeout(() => {
-            window.close();
-                }, 2000);
         }
 
         window.onload = function() {
